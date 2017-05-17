@@ -1,3 +1,4 @@
+language: go
 before_install:
   - npm install -g dredd@3.4.5
 
