@@ -1,0 +1,2942 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Box 2.0 API",
+    "description": "The Box Content API gives you access to secure content management and content experience features for use in your own app. It strives to be RESTful and is organized around the main resources you’re familiar with from the Box web interface.",
+    "version": "2.0",
+    "license": {
+      "name": "MIT",
+      "url": "http://github.com/gruntjs/grunt/blob/master/LICENSE-MIT"
+    }
+  },
+  "host": "api.box.com",
+  "basePath": "/2.0",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "Folders",
+      "description": "Folders operations"
+    },
+    {
+      "name": "Files",
+      "description": "Files operations"
+    },
+    {
+      "name": "Web Links",
+      "description": "Web Links operations"
+    },
+    {
+      "name": "Metadata",
+      "description": "Metadata operations"
+    },
+    {
+      "name": "Collections",
+      "description": "Collections operations"
+    },
+    {
+      "name": "Search",
+      "description": "Search operations"
+    },
+    {
+      "name": "Collaborations",
+      "description": "Collaborations operations"
+    },
+    {
+      "name": "Shared Items",
+      "description": "Shared Items operations"
+    },
+    {
+      "name": "Comments",
+      "description": "Comments operations"
+    },
+    {
+      "name": "Tasks",
+      "description": "Tasks operations"
+    },
+    {
+      "name": "Events",
+      "description": "Events operations"
+    },
+    {
+      "name": "Webhooks",
+      "description": "Webhooks operations"
+    },
+    {
+      "name": "Users",
+      "description": "Users operations"
+    },
+    {
+      "name": "Groups",
+      "description": "Groups operations"
+    },
+    {
+      "name": "Devices",
+      "description": "Devices operations"
+    },
+    {
+      "name": "Retention Policies",
+      "description": "Retention Policies operations"
+    },
+    {
+      "name": "Legal Holds Policies",
+      "description": "Legal Holds Policies operations"
+    }
+  ],
+  "securityDefinitions": {
+    "OAuth2Security": {
+      "type": "oauth2",
+      "flow": "accessCode",
+      "authorizationUrl": "https://account.box.com/api/oauth2/authorize",
+      "tokenUrl": "https://api.box.com/oauth2/token"
+    }
+  },
+  "security": [
+    {
+      "OAuth2Security": []
+    }
+  ],
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["error"]
+        },
+        "status": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "context_info" : {
+          "type" : "object",
+          "properties": {
+            "errors" : {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties" : {
+                  "reason" : {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "message" : {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "code": {
+          "type": "string"
+        },
+        "help-url": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "request_id": {
+          "type": "string"
+        }
+      }
+    },
+    "Reference": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "folder",
+            "file",
+            "user",
+            "file_version",
+            "lock",
+            "collaboration",
+            "comment",
+            "task",
+            "web_link",
+            "collection",
+            "task_assignment",
+            "event",
+            "realtime_server",
+            "webhook_event",
+            "webhook",
+            "enterprise",
+            "invite",
+            "email_alias",
+            "group",
+            "group_membership",
+            "device_pinner",
+            "retention_policy",
+            "retention_policy_assignment",
+            "file_version_retention",
+            "legal_hold_policy",
+            "legal_hold_policy_assignment",
+            "legal_hold"
+          ]
+        }
+      }
+    },
+    "Pagination": {
+      "type": "object",
+      "properties": {
+        "total_count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "offset": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "by": {
+                "type": "string"
+              },
+              "direction": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "MarkerPagination": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "next_marker": {
+          "type": "string"
+        },
+        "prev_marker": {
+          "type": "string"
+        }
+      }
+    },
+    "ChunkPagination": {
+      "type": "object",
+      "properties": {
+        "chunk_size": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "next_stream_position": {
+          "type": "string"
+        }
+      }
+    },
+    "ItemReference": {
+      "type": "object",
+      "description": "It references either a file or a folder",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "sequence_id": {
+              "type": "string",
+              "description": "A unique ID for use with the /events endpoint.\nMay be null for some folders such as root or trash."
+            },
+            "etag": {
+              "type": "string",
+              "description": "A unique string identifying the version of this folder.\nMay be null for some folders such as root or trash."
+            },
+            "name": {
+              "type": "string",
+              "description": "The name of the folder."
+            }
+          }
+        }
+      ]
+    },
+    "ItemReferenceList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ItemReference"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FileReference": {
+      "type": "object",
+        "description": "It references either a file or a folder",
+        "allOf": [
+          {
+            "$ref": "#/definitions/ItemReference"
+          },
+          {
+            "properties": {
+              "sha1": {
+                "type": "string",
+                "description": "The sha1 hash of this file."
+              }
+            }
+          }
+        ]
+    },
+    "FileReferenceList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FileReference"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FileVersionReference": {
+      "type": "object",
+      "description": "The version information of the file.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "sha1": {
+              "type": "string",
+              "description": "The sha1 hash of this file."
+            }
+          }
+        }
+      ]
+    },
+    "CreateUserReference": {
+      "type": "object",
+      "description": "It references a user",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of this user",
+          "x-example": "Ned Stark"
+        },
+        "login": {
+          "type": "string",
+          "description": "The email address this user uses to login.",
+          "x-example": "ned+stark@box.com"
+        },
+        "is_platform_access_only": {
+          "type": "boolean",
+          "description": "App User"
+        }
+      },
+      "example" : {
+        "name": "Ned Stark",
+        "login": "ned+stark@box.com",
+        "is_platform_access_only":true
+      }
+    },
+    "UserReference": {
+      "type": "object",
+      "description": "It references a user",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["user"]
+        },
+        "id": {
+          "type": "string",
+          "description": "Unqiue string identifying this user."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of this user"
+        },
+        "login": {
+          "type": "string",
+          "description": "The email address this user uses to login."
+        }
+      }
+    },
+    "PathCollection": {
+      "type": "object",
+      "description": "The path of folders, starting at the root.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ItemReference"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ItemCollection": {
+      "type": "object",
+      "description": "A collection of mini file and folder objects contained in this folder.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FileReference"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FolderUploadEmail": {
+      "type": "object",
+      "description": "The upload email address for this folder. Null if not set.",
+      "properties": {
+        "access": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "FolderPermissions": {
+      "type": "object",
+      "description": "The permissions that the current user has on the folder",
+      "properties": {
+        "can_download": {
+          "type": "boolean"
+        },
+        "can_upload": {
+          "type": "boolean"
+        },
+        "can_rename": {
+          "type": "boolean"
+        },
+        "cand_delete": {
+          "type": "boolean"
+        },
+        "can_share": {
+          "type": "boolean"
+        },
+        "can_invite_collaborator": {
+          "type": "boolean"
+        },
+        "can_set_share_access": {
+          "type": "boolean"
+        }
+      }
+    },
+    "FilePermissions": {
+      "type": "object",
+      "description": "The permissions that the current user has on the file",
+      "properties": {
+        "can_download": {
+          "type": "boolean"
+        },
+        "can_preview": {
+          "type": "boolean"
+        },
+        "can_upload": {
+          "type": "boolean"
+        },
+        "can_rename": {
+          "type": "boolean"
+        },
+        "cand_delete": {
+          "type": "boolean"
+        },
+        "can_share": {
+          "type": "boolean"
+        },
+        "can_invite_collaborator": {
+          "type": "boolean"
+        },
+        "can_set_share_access": {
+          "type": "boolean"
+        }
+      }
+    },
+    "WatermarkInfo": {
+      "type": "array",
+      "items": {
+        "properties": {
+          "is_watermarked": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "Folder": {
+      "title": "Folder Object",
+      "description": "Folders contain information about the items contained inside of them, including files and other folders. There is also a set of metadata such as who owns the folder and when it was modified that is also returned. When accessing other resources that make reference to folders, a ‘mini folder’ object will be used. The 'mini folder' object will return type, id, sequence_id, etag, and name.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ItemReference"
+        },
+        {
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time the folder was created.\nMay be null for some folders such as root or trash."
+            },
+            "description": {
+              "type": "string",
+              "description": "The description of the folder."
+            },
+            "size": {
+              "type": "integer",
+              "format": "int64",
+              "description": "The folder size in bytes. Be careful parsing this integer, it can easily go into EE notation: see IEEE754 format."
+            },
+            "path_collection": {
+              "$ref": "#/definitions/PathCollection",
+              "description": "The path of folders to this folder, starting at the root."
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who created this folder."
+            },
+            "modified_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who last modified this folder."
+            },
+            "trashed_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time the folder or its contents were put in the trash.\nMay be null for some folders such as root or trash."
+            },
+            "purged_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time the folder or its contents will be purged from the trash.\nMay be null for some folders such as root or trash."
+            },
+            "content_created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time the folder or its contents were originally created (according to the uploader).May be null for some folders such as root or trash."
+            },
+            "content_modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time the folder or its contents were last modified (according to the uploader).\nMay be null for some folders such as root or trash."
+            },
+            "owned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who owns this folder."
+            },
+            "shared_link": {
+              "$ref": "#/definitions/SharedLink",
+              "description": "The shared link for this folder. Null if not set."
+            },
+            "folder_upload_email": {
+              "$ref": "#/definitions/FolderUploadEmail"
+            },
+            "parent": {
+              "$ref": "#/definitions/ItemReference",
+              "description": "The folder that contains this one.May be null for folders such as root, trash and child folders whose parent is inaccessible."
+            },
+            "item_status": {
+              "type": "string",
+              "description": "Whether this item is deleted or not."
+            },
+            "item_collection": {
+              "$ref": "#/definitions/ItemCollection"
+            },
+            "collections": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Collection"
+              }
+            },
+            "sync_state": {
+              "type": "string",
+              "description": "Whether this folder will be synced by the Box sync clients or not. Can be synced, not_synced, or partially_synced.",
+              "enum": [
+                "synced",
+                "not_synced",
+                "partially_synced"
+              ]
+            },
+            "has_collaborations": {
+              "type": "boolean",
+              "description": "Whether this folder has any collaborators."
+            },
+            "permissions": {
+              "$ref": "#/definitions/FolderPermissions"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "All tags applied to this folder."
+            },
+            "can_non_owners_invite": {
+              "type": "boolean",
+              "description": "Whether non-owners can invite collaborators to this folder."
+            },
+            "is_externally_owned": {
+              "type": "boolean",
+              "description": "Whether this folder is owned by a user outside of the enterprise"
+            },
+            "allowed_shared_link_access_levels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "enum": [
+                "collaborators",
+                "open",
+                "company"
+              ],
+              "description": "Access level settings for shared links set by administrator. Can be collaborators, open, or company."
+            },
+            "allowed_invitee_roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Folder collaboration collaboration settings allowed by the enterprise administrator."
+            },
+            "watermark_info": {
+              "$ref": "#/definitions/WatermarkInfo"
+            }
+          }
+        }
+      ]
+    },
+    "Lock": {
+      "type": "object",
+      "description": "The lock held on the file.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "created_by": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expired_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "is_download_prevented": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "FileVersion": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/FileVersionReference"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "size": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified_by": {
+              "$ref": "#/definitions/UserReference"
+            }
+          }
+        }
+      ]
+    },
+    "FileVersionList": {
+      "type": "object",
+      "description": "A collection of FileVersions.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FileVersion"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "BoxFile": {
+      "title": "File Object",
+      "description": "File information describe file objects in Box, with attributes like who created the file, when it was last modified, and other information. The actual content of the file itself is accessible through the /files/{id}/content endpoint.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/FileReference"
+        },
+        {
+          "properties": {
+            "file_version": {
+              "$ref": "#/definitions/FileVersionReference"
+            },
+            "description": {
+              "type": "string",
+              "description": "The description of this file."
+            },
+            "size": {
+              "type": "integer",
+              "format": "int64",
+              "description": "Size of this file in bytes."
+            },
+            "path_collection": {
+              "$ref": "#/definitions/PathCollection",
+              "description": "The path of folders to this file, starting at the root."
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file was created on Box’s servers."
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file was last updated on the Box servers."
+            },
+            "trashed_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file was last moved to the trash."
+            },
+            "purged_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file will be permanently deleted."
+            },
+            "content_created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the content of this file was created (more info)."
+            },
+            "content_modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the content of this file was last modified (more info)."
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who first created file."
+            },
+            "modified_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who last updated this file."
+            },
+            "owned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who owns this file."
+            },
+            "shared_link": {
+              "$ref": "#/definitions/SharedLink"
+            },
+            "parent": {
+              "$ref": "#/definitions/ItemReference",
+              "description": "The folder containing this file."
+            },
+            "item_status": {
+              "type": "string",
+              "description": "Whether this item is deleted or not."
+            },
+            "version_number": {
+              "type": "string",
+              "description": "The version number of the file."
+            },
+            "comment_count": {
+              "type": "integer",
+              "format": "int64",
+              "description": "The number of comments on a file."
+            },
+            "permissions": {
+              "$ref": "#/definitions/FilePermissions"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "All tags applied to this file."
+            },
+            "collections": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Collection"
+              }
+            },
+            "lock": {
+              "$ref": "#/definitions/Lock"
+            },
+            "extension": {
+              "type": "string",
+              "description": "Indicates the suffix, when available, on the file. By default, set to an empty string. The suffix usually indicates the encoding (file format) of the file contents or usage."
+            },
+            "is_package": {
+              "type": "boolean",
+              "description": "Whether the file is a package. Used for Mac Packages used by iWorks."
+            },
+            "expiring_embed_link": {
+              "type": "string",
+              "description": "An expiring URL for an embedded preview session in an iframe. This URL will expire after 60 seconds and the session will expire after 60 minutes."
+            },
+            "watermark_info": {
+              "$ref": "#/definitions/WatermarkInfo"
+            }
+          }
+        }
+      ]
+    },
+    "CopyFile": {
+      "type": "object",
+      "properties": {
+        "parent": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        },
+        "version": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "SharedLinkPermissions": {
+      "type": "object",
+      "properties": {
+        "can_download": {
+          "type": "boolean"
+        },
+        "can_preview": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SharedLink": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "download_url": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "vanity_url": {
+          "type": "string"
+        },
+        "is_password_enabled": {
+          "type": "boolean"
+        },
+        "unshared_at": {
+          "type": "string"
+        },
+        "download_count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "preview_count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "access": {
+          "type": "string"
+        },
+        "effective_access": {
+          "type": "string"
+        },
+        "permissions": {
+          "$ref": "#/definitions/SharedLinkPermissions"
+        }
+      }
+    },
+    "Collaboration": {
+      "type": "object",
+      "description": "Collaborations are used to set and apply access permissions for users and groups to files and folders, similar to access control lists.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who created this collaboration"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this collaboration was created"
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this collaboration was last modified"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this collaboration will expire"
+            },
+            "status": {
+              "type": "string",
+              "description": "The status of this collab. Can be accepted, pending, or rejected"
+            },
+            "accessible_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user or group who the collaboration applies to"
+            },
+            "role": {
+              "type": "string",
+              "description": "The level of access this user or group has. Can be editor, viewer, previewer, uploader, previewer uploader, viewer uploader, co-owner, or owner",
+              "enum": [
+                "editor",
+                "viewer",
+                "previewer",
+                "uploader",
+                "previewer uploader",
+                "viewer uploader",
+                "co-owner",
+                "owner"
+              ]
+            },
+            "acknowledged_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When the status of this collab was changed"
+            },
+            "item": {
+              "$ref": "#/definitions/ItemReference"
+            },
+            "can_view_path": {
+              "type": "boolean",
+              "description": "Whether view path collaboration feature is enabled or not. View path collaborations allow the invitee to see the entire ancestral path to the associated folder. The user will not gain privileges in any ancestral folder"
+            }
+          }
+        }
+      ]
+    },
+    "CollaborationList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Collaboration"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "TaskAssignment": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "item": {
+              "$ref": "#/definitions/FileReference"
+            },
+            "assigned_to": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "message": {
+              "type": "string",
+              "description": "A message that will be included with this task assignment"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date at which this task assignment was completed"
+            },
+            "assigned_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date at which this task assignment was assigned"
+            },
+            "reminded_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date at which this task assignment was reminded"
+            },
+            "resolution_state": {
+              "type": "string",
+              "description": "State of this assignment (complete/incomplete)",
+              "enum": [
+                "completed",
+                "incomplete",
+                "approved",
+                "rejected"
+              ]
+            },
+            "assigned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who assigned this task assignment"
+            }
+          }
+        }
+      ]
+    },
+    "TaskAssignmentList": {
+      "type": "object",
+      "description": "A collection Task Assignment.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TaskAssignment"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Task": {
+      "title": "Task Object",
+      "description": "Tasks enabled file-centric workflows in Box. User can create tasks on files and assign them to collaborators on Box. You can read more about tasks in Box here.\n\n\t\t\t",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "item": {
+              "$ref": "#/definitions/FileReference"
+            },
+            "due_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The date at which this task is due"
+            },
+            "action": {
+              "type": "string",
+              "description": "The action the task assignee will be prompted to do. Must be review",
+              "enum": [
+                "review"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "description": "A message that will be included with this task"
+            },
+            "task_assignment_collection": {
+              "$ref": "#/definitions/TaskAssignmentList"
+            },
+            "is_completed": {
+              "type": "boolean",
+              "description": "Whether or not this task has been completed"
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who created this task"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this task was created"
+            }
+          }
+        }
+      ]
+    },
+    "TaskList": {
+      "type": "object",
+      "description": "A collection Tasks.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Task"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WebLink": {
+      "title": "Web Link Object",
+      "description": "Web links are objects that point to URLs. These objects are also known as bookmarks within the Box web application. Web link objects are treated similarly to file objects, so they will also support shared links, copy, permanent delete, and restore with the format /web_links/{WEB_LINK_ID} in place of /files/{FILE_ID}.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ItemReference"
+        },
+        {
+          "properties": {
+            "parent": {
+              "$ref": "#/definitions/ItemReference",
+              "description": "The parent object the web link belongs to"
+            },
+            "url": {
+              "type": "string",
+              "description": "The URL this web link points to."
+            },
+            "description": {
+              "type": "string",
+              "description": "The description accompanying the web link. This is visible within the Box web application."
+            },
+            "path_collection": {
+              "$ref": "#/definitions/PathCollection",
+              "description": "The path of folders to this item, starting at the root."
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file was created on Box’s servers."
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file was last updated on the Box servers."
+            },
+            "trashed_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file was last moved to the trash."
+            },
+            "purged_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this file will be permanently deleted."
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who first created file."
+            },
+            "modified_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who last updated this file."
+            },
+            "owned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user who owns this file."
+            },
+            "shared_link": {
+              "$ref": "#/definitions/SharedLink",
+              "description": "The shared link object for this file."
+            },
+            "item_status": {
+              "type": "string",
+              "description": "Whether this item is deleted or not."
+            }
+          }
+        }
+      ]
+    },
+    "TemplateFields": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The data type of the field's value.",
+          "enum": [
+            "string",
+            "enum",
+            "float",
+            "date"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "description": "A unique identifier for the field. The identifier must be unique within the template to which it belongs. The character limit is 256. All characters are allowed."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the field. The character limit is 4096. All characters are allowed."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the field. The character limit is 4096. All characters are allowed."
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "MetadataTemplate": {
+      "title": "Metadata Template Object",
+      "description": "Metadata that belongs to a file or folder is grouped by templates. Templates allow the metadata service to provide a multitude of services, such as pre-defining sets of key:value pairs or schema enforcement on specific fields.",
+      "type": "object",
+      "properties": {
+        "templateKey": {
+          "type": "string",
+          "description": "A unique identifier for the template. The identifier must be unique across the scope of the enterprise to which the metadata template is being applied to. Defaults to a string derived from the displayName if no value is provided."
+        },
+        "scope": {
+          "type": "string",
+          "description": "The scope of the object.",
+          "enum": [
+            "enterprise",
+            "global"
+          ]
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The display name of the template. The character limit is 4096."
+        },
+        "hidden": {
+          "type": "boolean",
+          "description": "Whether this template is hidden in the UI"
+        },
+        "fields":  {
+          "type": "array",
+          "description": "The ordered set of key:value pairs for the template.",
+          "items": {
+            "$ref": "#/definitions/TemplateFields"
+          }
+        }
+      }
+    },
+    "MetadataTemplateList": {
+      "type": "object",
+      "description": "A collection Metadata templates",
+      "allOf": [
+        {
+          "$ref": "#/definitions/MarkerPagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MetadataTemplate"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Metadata": {
+      "title": "Metadata Object",
+      "description": "Metadata can be used for many purposes. Enterprises may want to have a better way to organize their digital assets for their marketing teams or developers may want to provide advanced content functionality such as facilitating workflows or approvals. Metadata is also visible in the Box Web Application. To learn more, please visit the help documentation.\nTemplates\nMetadata that belongs to a file/folder is grouped by templates. Templates allow the metadata service to provide a multitude of services, such as pre-defining sets of key:value pairs or schema enforcement on specific fields. For example, a marketingCollateral template may define where and when specific marketing content should be used. You can also see the representation of the template in the Box web application while navigating to a file preview. Currently, metadata associated with folders does not show in the web application.\nEach file/folder can have multiple distinct template instances associated with it, such as a marketingCollateral and retentionPolicy template instances. Template instances are also grouped by scopes. Currently, the only scopes support are enterprise and global. Enterprise scopes are defined on a per enterprises basis, whereas global scopes are Box application-wide. Attribute order within template instances is not guaranteed.\nCurrently, there are four attributes supported by templates: string, enum, float, and  date (RFC 3339).\n\nGlobal Properties Template\nIn addition to enterprise scoped templates, every file on Box has access to the global properties template. The Properties template is a bucket of free form key:value string pairs, with no additional schema associated with it. Properties are ideal for scenarios where applications want to write metadata to file objects in a flexible way, without pre-defined template structure.\nProperties follow all the conventions of standard templates, except for being located at a different endpoint. All requests made to the properties template must be made to /files/{file_id}/metadata/global/properties.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "MetadataList": {
+      "type": "object",
+      "description": "A collection of Metadata objects",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Metadata"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WatermarkReference": {
+      "type": "object",
+      "description": "Waternmark a semi-transparent overlay on an embedded file preview that displays a viewer's email address or user ID and the time of access over a file's content",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this watermark was created"
+        },
+        "modified_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this task was modified"
+        },
+        "imprint": {
+          "type": "string",
+          "enum": [
+            "default"
+          ]
+        }
+      }
+    },
+    "Watermark": {
+      "type": "object",
+      "properties": {
+        "watermark": {
+          "$ref": "#/definitions/WatermarkReference"
+        }
+      }
+    },
+    "Collection": {
+      "title": "Collection Object",
+      "description": "Collections contain information about the items contained inside of them, including files and folders. The only collection available currently is a “Favorites” collection. The contents of the collection are discovered in a similar way in which the contents of a folder are discovered.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of this collection. The only collection currently available is named “Favorites”"
+            },
+            "collection_type": {
+              "type": "string",
+              "description": "The type of the collection. This is used to determine the proper visual treatment for Box-internally created collections. Initially only “favorites” collection-type will be supported.",
+              "enum": [
+                "favorites"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "CollectionList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Collection"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Comment": {
+      "title": "Comment Object",
+      "description": "Comments are messages generated by Box users. Each message is tied to a specific file. You can create comments independently or create them as responses to other comments.\n\n\t\t\t",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "is_reply_comment": {
+              "type": "boolean",
+              "description": "Whether or not this comment is a reply to another comment"
+            },
+            "message": {
+              "type": "string",
+              "description": "The comment text that the user typed"
+            },
+            "tagged_message": {
+              "type": "string",
+              "description": "The string representing the comment text with @mentions included. @mention format is @[id:username]. Field is not included by default."
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "A mini user object representing the author of the comment"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this comment was created"
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this comment was last modified"
+            },
+            "item": {
+                "$ref": "#/definitions/ItemReference"
+            }
+          }
+        }
+      ]
+    },
+    "CommentList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Comment"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Event": {
+      "title": "Event Object",
+      "description": "",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "event"
+          ]
+        },
+        "event_id": {
+          "type": "string",
+          "description": "The id of the event, used for de-duplication purposes"
+        },
+        "created_by": {
+          "$ref": "#/definitions/UserReference",
+          "description": "The user that performed the action. Some events may be performed by users not logged into Box. In those instances, not all attributes of this object will be populated and the event will be attributed to a unknown user (user_id = 2)."
+        },
+        "event_type": {
+          "type": "string",
+          "description": "One of the event types"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "The session of the user that performed the action. Not all events will populate this attribute."
+        },
+        "source": {
+          "type": "object",
+          "description": "The object that was modified. See Object definitions for appropriate object: file, folder, comment, etc. Not all events have a source object."
+        },
+        "additional_details": {
+          "type": "object",
+          "description": "This object provides additional information about the event if available. This can include how a user performed an event as well as additional information to correlate an event to external Keysafe logs. Not all events have an additional_details object.  This object is only available in the Enterprise Events."
+        }
+      }
+    },
+    "EventList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ChunkPagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Event"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Notification": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "webhook": {
+              "$ref": "#/definitions/Reference",
+              "description": "It is a Webhook reference"
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "trigger": {
+              "type": "string"
+            },
+            "source": {
+              "type": "object"
+            },
+            "additional_info": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "RealtimeServer": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "ttl": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "max_retries": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "retry_timeout": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "RealtimeServerList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/ChunkPagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RealtimeServer"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Webhook": {
+      "title": "Webhook Object",
+      "description": "When you create or retrieve a webhook a JSON object representing the webhook is returned to you. This JSON object's fields contain the name and ID of the webhook, along with configuration details such as its target and its notification URL.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "target": {
+              "$ref": "#/definitions/Reference",
+              "description": "A target is a file or folder"
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "An RFC-3339 timestamp identifying the time that the webhook was created."
+            },
+            "address": {
+              "type": "string",
+              "description": "The notification URL of the webhook. The notification URL is the URL used by Box to send a notification when the webhook is triggered."
+            },
+            "triggers": {
+              "type": "array",
+              "description": "An array of event names. The events that webhooks support are listed in the 'Event Triggers' (https://docs.box.com/reference#event-triggers) section.",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WebhookList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Webhook"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Enterprise": {
+      "type": "object",
+      "description": "Mini representation of this user’s enterprise, including the ID of its enterprise.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "User": {
+      "title": "User Object",
+      "description": "The users endpoint is used for managing a user and its content. For an individual user, this includes their own user information and content. For an enterprise admin, this includes both the individual user and any other users in the admin’s enterprise account.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/UserReference"
+        },
+        {
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this user was created."
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this user was last modified."
+            },
+            "language": {
+              "type": "string",
+              "description": "The language of this user. (ISO 639-1 Language Code)"
+            },
+            "timezone": {
+              "type": "string",
+              "description": "The timezone of this user. (tz Database timezones)"
+            },
+            "space_amount": {
+              "type": "integer",
+              "format": "int64",
+              "description": "The user’s total available space amount in bytes."
+            },
+            "space_used": {
+              "type": "integer",
+              "format": "int64",
+              "description": "The amount of space in use by the user."
+            },
+            "max_upload_size": {
+              "type": "integer",
+              "format": "int64",
+              "description": "The maximum individual file size in bytes this user can have."
+            },
+            "status": {
+              "type": "string",
+              "description": "Can be active, inactive, cannot_delete_edit, or cannot_delete_edit_upload.",
+              "enum": [
+                "active",
+                "inactive",
+                "cannot_delete_edit",
+                "cannot_delete_edit_upload"
+              ]
+            },
+            "job_title": {
+              "type": "string",
+              "description": "The user’s job title."
+            },
+            "phone": {
+              "type": "string",
+              "description": "The user’s phone number."
+            },
+            "address": {
+              "type": "string",
+              "description": "The user’s address."
+            },
+            "avatar_url": {
+              "type": "string",
+              "description": "URL of this user’s avatar image."
+            },
+            "role": {
+              "type": "string",
+              "description": "This user’s enterprise role. Can be admin, coadmin, or user.",
+              "enum": [
+                "admin",
+                "coadmin",
+                "user"
+              ]
+            },
+            "tracking_codes": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              },
+              "description": "An array of key/value pairs set by the user’s admin."
+            },
+            "can_see_managed_users": {
+              "type": "boolean",
+              "description": "Whether this user can see other enterprise users in her contact list."
+            },
+            "is_sync_enabled": {
+              "type": "boolean",
+              "description": "Whether or not this user can use Box Sync."
+            },
+            "is_external_collab_restricted": {
+              "type": "boolean",
+              "description": "Whether this user is allowed to collaborate with users outside her enterprise."
+            },
+            "is_exempt_from_device_limits": {
+              "type": "boolean",
+              "description": "Whether to exempt this user from Enterprise device limits."
+            },
+            "is_exempt_from_login_verification": {
+              "type": "boolean",
+              "description": "Whether or not this user must use two-factor authentication."
+            },
+            "enterprise": {
+              "$ref": "#/definitions/Enterprise"
+            },
+            "my_tags": {
+              "type": "array",
+              "description": "Tags for all files and folders owned by this user.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "hostname": {
+              "type": "string",
+              "description": "The root (protocol, subdomain, domain) of any links that need to be generated for this user"
+            }
+          },
+          "example": {
+            "name": "Ned Stark",
+            "login": "eddard@box.com"
+          }
+        }
+      ]
+    },
+    "UserList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/User"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Invite": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "invited_to": {
+              "$ref": "#/definitions/Enterprise"
+            },
+            "actionable_by": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "invited_by": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "status": {
+              "type": "string"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      ]
+    },
+    "EmailAlias": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "is_confirmed": {
+              "type": "boolean"
+            },
+            "email": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "EmailAliasList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/EmailAlias"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "GroupReference": {
+      "type": "object",
+      "description": "Mini representation of the group, including id and name of group.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of this group"
+            }
+          }
+        }
+      ]
+    },
+    "Group": {
+      "title": "Group Object",
+      "description": "Groups contain a set of users, and can be used in place of users in some operations, such as collaborations.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/GroupReference"
+        },
+        {
+          "properties": {
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this groups was created on Box’s servers"
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "When this group was last updated on the Box servers"
+            },
+            "provenance": {
+              "type": "string",
+              "description": "Keeps track of which external source this group is coming from (e.g. \"Active Directory\", \"Google Groups\", \"Facebook Groups\").  This should be a human-readable identifier up to 255 characters long.  Setting this will also prevent Box users from editing this group directly through Box.  This is desirable for one-way syncing of groups. Needs to be accessed via the fields parameter."
+            },
+            "external_sync_identifier": {
+              "type": "string",
+              "description": "An arbitrary identifier that can be used by external group sync tools to link this Box Group to an external group.  Example values of this field could be an Active Directory Object ID or a Google Group ID.  We recommend use of this field in order to avoid issues when group names are updated in either Box or external systems. Needs to be accessed via the fields parameter."
+            },
+            "description": {
+              "type": "string",
+              "description": "Human readable description of this Group.  This can be up to 255 characters long. Needs to be accessed via the fields parameter."
+            },
+            "invitability_level": {
+              "type": "string",
+              "description": "Specifies who can invite this group to collaborate on folders (Create Collaboration).\nadmins_only Master Admin, Coadmins, group's Group Admin.\nadmins_and_members Admins listed above and group members.\nall_managed_users All managed users in the enterprise.",
+              "enum": [
+                "admins_only",
+                "admins_and_members",
+                "all_managed_users"
+              ]
+            },
+            "member_viewability_level": {
+              "type": "string",
+              "description": "Specifies who can view the members of this group (Get Memberships for Group).\nadmins_only Master Admin, Coadmins, group's Group Admin.\nadmins_and_members Admins and group members.\nall_managed_users All managed users in the enterprise.",
+              "enum": [
+                "admins_only",
+                "admins_and_members",
+                "all_managed_users"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "GroupList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Group"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "GroupMembership": {
+      "title": "Membership Object",
+      "description": "Membership is used to signify that a user is part of a group. Membership can be added, requested, updated and deleted. You can also get all members of a group, or all memberships for a given user.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "user": {
+              "$ref": "#/definitions/UserReference"
+            },
+            "group": {
+              "$ref": "#/definitions/GroupReference"
+            },
+            "role": {
+              "type": "string",
+              "description": "The role of the user in the group.",
+              "enum": [
+                "member",
+                "admin"
+              ]
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this membership was created."
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this membership was last modified."
+            }
+          }
+        }
+      ]
+    },
+    "GroupMembershipList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupMembership"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DevicePinner": {
+      "title": "Device Pinner Object",
+      "description": "Device pins allow enterprises to control what devices can use native Box applications. To learn more about device pinning, please see our  documentation.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "owned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "The user that the pin belongs to"
+            },
+            "product_name": {
+              "type": "string",
+              "description": "The type of device being pinned"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this pin was created"
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time this pin was modified"
+            }
+          }
+        }
+      ]
+    },
+    "DevicePinnerList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DevicePinner"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "RetentionPolicyReference": {
+      "type": "object",
+      "description": "Mini representation of the retention policy",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "policy_name": {
+              "type": "string",
+              "description": "The name given to the retention policy"
+            }
+          }
+        }
+      ]
+    },
+    "RetentionPolicy": {
+      "title": "Retention Policy Object",
+      "description": "A retention policy blocks permanent deletion of content for a specified amount of time. Admins can create retention policies and then later assign them to specific folders or their entire enterprise.  To use this feature, you must have the manage retention policies scope enabled for your API key via your application management console. For more information about retention policies, please visit our help documentation. \n\n\t\t\t",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/RetentionPolicyReference"
+        },
+        {
+          "properties": {
+            "policy_type": {
+              "type": "string",
+              "description": "The type of the retention policy. A retention policy type can either be finite, where a specific amount of time to retain the content is known upfront, or indefinite, where the amount of time to retain the content is still unknown.",
+              "enum": [
+                "finite",
+                "indefinite"
+              ]
+            },
+            "retention_length": {
+              "type": "integer",
+              "format": "int64",
+              "description": "The length of the retention policy. This length specifies the duration in days that the retention policy will beactive for after being assigned to content."
+            },
+            "disposition_action": {
+              "type": "string",
+              "description": "The disposition action of the retention policy. This actioncan be permanently_delete, which will cause the content retained by the policy to be permanently deleted, or remove_retention, which will lift the retention policy from the content, allowing it to be deleted by users, once the retention policy time period has passed.",
+              "enum": [
+                "permanently_delete",
+                "remove_retention"
+              ]
+            },
+            "status": {
+              "type": "string",
+              "description": "The status of a retention policy. The status of a policy will be active, unless explicitly retired by an administrator, in which case the status will be retired. Once a policyhas been retired, it cannot become active again.",
+              "enum": [
+                "active",
+                "retired"
+              ]
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "A mini user object representing the user that created the retention policy."
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time that the retention policy was created."
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time that the retention policy was last modified."
+            }
+          }
+        }
+      ]
+    },
+    "RetentionPolicyList": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RetentionPolicy"
+          }
+        }
+      }
+    },
+    "RetentionPolicyAssignment": {
+      "title": "Retention Policy Assignment Object",
+      "description": "The retention policy assignment endpoint provides a way for admins to apply a retention policy on a per-folder basis, or place a blanket policy over the entire enterprise.\n\n\t\t\t",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "retention_policy": {
+              "description": "A mini retention policy object representing the retention policy that has been assigned to this content.",
+              "$ref": "#/definitions/RetentionPolicyReference"
+            },
+            "assigned_to": {
+              "description": "The type and id of the content that is under retention. The type can either be folder or enterprise.",
+              "$ref": "#/definitions/ItemReference"
+            },
+            "assigned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "A mini user object representing the user that created the retention policy assignment."
+            },
+            "assigned_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time that the retention policy assignment was created."
+            }
+          }
+        }
+      ]
+    },
+    "RetentionPolicyAssignmentList": {
+      "type": "object",
+      "properties": {
+        "entries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RetentionPolicyAssignment"
+          }
+        }
+      }
+    },
+    "FileVersionRetention": {
+      "title": "File Version Retention Object",
+      "description": "A retention policy blocks permanent deletion of content for a specified amount of time. Admins can apply policies to specified folders, or an entire enterprise. A file version retention is a record for a retained file version. To use this feature, you must have the manage retention policies scope enabled for your API key via your application management console. For more information about retention policies, please visit our help documentation.\n\n\t\t\t",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "file_version": {
+              "description": "The file version this file version retention was applied to.",
+              "$ref": "#/definitions/FileVersionReference"
+            },
+            "file": {
+              "description": "The file this file version retention was applied to.",
+              "$ref": "#/definitions/FileReference"
+            },
+            "applied_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time that this file version retention was created."
+            },
+            "disposition_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "The time that the retention period expires on this file version retention."
+            },
+            "winning_retention_policy": {
+              "$ref": "#/definitions/RetentionPolicyReference",
+              "description": "The winning retention policy applied to this file_version_retention. A file version can have multiple retention policies applied."
+            }
+          }
+        }
+      ]
+    },
+    "FileVersionRetentionList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FileVersionRetention"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AssignmentCounts": {
+      "type": "object",
+      "description": "Counts of assignments within this policy by apply-to type.",
+      "properties": {
+        "user": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "folder": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "file": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "file_version": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "LegalHoldPolicy": {
+      "title": "Legal Hold Policy object",
+      "type": "object",
+      "description": "Legal Hold Policy information describes the basic characteristics of the Policy, such as name, description, and filter dates.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "policy_name": {
+              "type": "string",
+              "description": "Name of the Policy. This is limited to 254 characters."
+            },
+            "description": {
+              "type": "string",
+              "description": "The type and id of the content that is under retention. The type can either be folder or enterprise."
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "applying",
+                "releasing",
+                "released"
+              ]
+            },
+            "assignment_count": {
+              "$ref": "#/definitions/AssignmentCounts"
+            },
+            "created_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "User who created this Policy."
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Time the Policy was created."
+            },
+            "modified_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Time that the Policy itself was modified. Does not update when assignments are added or removed."
+            },
+            "deleted_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Time that the policy release request was sent."
+            },
+            "filter_started_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "User-specified, optional date filter applies to Custodian assignments only."
+            },
+            "filter_ended_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "User-specified, optional date filter applies to Custodian assignments only."
+            },
+            "release_notes": {
+              "type": "string",
+              "description": "Notes around why the policy was released. Optional property with a 500 character limit."
+            }
+          }
+        }
+      ]
+    },
+    "LegalHoldPolicyList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LegalHoldPolicy"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "LegalHoldPolicyAssignment": {
+      "title": "Legal Hold Policy Assignment object",
+      "type": "object",
+      "description": "Legal Hold Assignments are used to assign Legal Hold Policies to Custodians, Folders, Files, or File Versions. Creating a Legal Hold Assignment puts a hold on the File-Versions that belong to the Assignment's 'apply-to' entity.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "legal_hold_policy": {
+              "$ref": "#/definitions/RetentionPolicyReference",
+              "description": "The Policy that this Assignment is part of."
+            },
+            "assigned_to": {
+              "$ref": "#/definitions/ItemReference",
+              "description": "The entity that this is assigned to. Includes type and ID."
+            },
+            "assigned_by": {
+              "$ref": "#/definitions/UserReference",
+              "description": "User who created this assignment."
+            },
+            "assigned_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Time the Assignment was created."
+            },
+            "deleted_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Time that the Assignment release request was sent. "
+            }
+          }
+        }
+      ]
+    },
+    "LegalHoldPolicyAssignmentList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LegalHoldPolicyAssignment"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FileVersionLegalHold": {
+      "title": "File Version Legal Hold object",
+      "type": "object",
+      "description": "File-Version-Legal-Hold is an entity representing all holds on a File Version. Type is legal-hold.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Reference"
+        },
+        {
+          "properties": {
+            "file_version": {
+              "$ref": "#/definitions/FileVersionReference",
+              "description": "The File-Version that is held."
+            },
+            "file": {
+              "$ref": "#/definitions/FileReference",
+              "description": "The parent file of the File-Version that is held. Note that there is no guarantee that the current version of this File is held."
+            },
+            "legal_hold_policy_assignments": {
+              "description": "List of assignments contributing to this Hold.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/LegalHoldPolicyAssignment"
+              }
+            },
+            "deleted_at": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Time that this File-Version-Legal-Hold was deleted."
+            }
+          }
+        }
+      ]
+    },
+    "FileVersionLegalHoldList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/FileVersionLegalHold"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MDFilters": {
+      "type": "object",
+      "properties": {
+        "templateKey": {
+          "type": "string",
+          "description": "The key name of the template you want to search for. Currently, only searching for one template at a time is supported"
+        },
+        "scope": {
+          "type": "string",
+          "description": "Specifies the scope of the template searched for.",
+          "enum": [
+            "global",
+            "enterprise"
+          ]
+        },
+        "filters": {
+          "type": "string",
+          "description": "Child of mdfilters. Keys and values of the template you want to search within. For floats and dates, you can include an (inclusive) upper bound parameter lt or (inclusive) lower bound parameter gt or both bounds. An example filter for a “contractExpiration” on or before 08-01-16 would be listed as {\"contractExpiration\":{\"lt\":\"2016-08-01T00:00-00:00\"}}"
+        }
+      }
+    },
+    "CreateTaskAssignment": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "$ref": "#/definitions/Task"
+        },
+        "assign_to": {
+          "$ref": "#/definitions/UserReference"
+        }
+      }
+    },
+    "InviteUser": {
+      "type": "object",
+      "properties": {
+        "enterprise": {
+          "$ref": "#/definitions/Reference"
+        },
+        "actionable_by": {
+          "$ref": "#/definitions/UserReference"
+        }
+      }
+    },
+    "UpdateMetadataTemplate": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "op"
+        ],
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "The operation name.",
+            "enum": [
+              "addEnumOption",
+              "addField",
+              "editField",
+              "editTemplate",
+              "reorderEnumOptions",
+              "reorderFields"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "description": "The data for the operation.  Can vary depending on the operation."
+          },
+          "fieldKey": {
+            "type": "string",
+            "description": "For operations that affect a specific field, the key of the field to be affected."
+          },
+          "fieldKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "For operations that affect multiple fields, the keys of the fields to be affected."
+          },
+          "enumOptionKeys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "For operations that affect multiple enum options, the keys of the enum options to be affected."
+          }
+        }
+      }
+    },
+    "UpdateMetadata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "op",
+          "path"
+        ],
+        "properties": {
+          "op": {
+            "type": "string",
+            "description": "The operation type. Must be add, replace, remove , test, move, or copy.",
+            "enum": [
+              "add",
+              "replace",
+              "remove",
+              "test",
+              "move",
+              "copy"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "description": "The path that designates the key, in the format of a JSON-Pointer. Since all keys are located at the root of the metadata instance, the key must be prefixed with a /. Special characters ~ and / in the key must be escaped according to JSON-Pointer specification. The value at the path must exist for the operation to be successful."
+          },
+          "value": {
+            "type": "string",
+            "description": "The value to be set or tested. Required for add, replace, and test operations. For add, if value already exists, then previous value will be overwritten by the new value. For replace, the metadata value must exist before replacing.For test, the value of the existing metadata instance must match the specified value."
+          },
+          "from": {
+            "type": "string",
+            "description": "Required for move or copy. The path that designates the source key, in the format of a JSON-Pointer, formatted in the same way as path. Used in conjunction with path: from specifies the source, path specifies the destination."
+          }
+        }
+      }
+    },
+    "CreateLegalHoldPolicyAssignment": {
+      "type": "object",
+      "description": "Request object to create a new Legal Policy Hold Assignment",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "description": "ID of Policy to create Assignment for."
+        },
+        "assign_to": {
+          "$ref": "#/definitions/Reference",
+          "description": "Target Object. Type of target and ID of the target entity"
+        }
+      }
+    },
+    "CreateRetentionPolicyAssignment": {
+      "type": "object",
+      "description": "Request object to create a new Retention Policy Assignment",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "description": "ID of Policy to create Assignment for."
+        },
+        "assign_to": {
+          "$ref": "#/definitions/Reference",
+          "description": "Target Object. Type of target and ID of the target entity"
+        }
+      }
+    },
+    "ObjectList": {
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/definitions/Pagination"
+        },
+        {
+          "properties": {
+            "entries": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "responses": {
+  },
+  "paths": {
+    "/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "getCurrentUser",
+        "summary": "Get Current User",
+        "description": "Retrieves information about the user who is currently logged in i.e. the user for whom this auth token was generated.",
+        "externalDocs": {
+          "url": "https://docs.box.com/reference#get-the-current-users-information"
+        },
+        "parameters": [
+          {
+            "name": "fields",
+            "description": "Attribute(s) to include in the response",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a single complete user object.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "examples": {
+              "application/json": {
+                "type": "user",
+                "id": "238120843",
+                "name": "Harish Gokavarapu",
+                "login": "mail.iamharish@gmail.com",
+                "created_at": "2015-05-19T17:52:04-07:00",
+                "modified_at": "2017-05-08T15:15:01-07:00",
+                "language": "en",
+                "timezone": "America/Los_Angeles",
+                "space_amount": 1000000000000000,
+                "space_used": 27295832522,
+                "max_upload_size": 2147483648,
+                "status": "active",
+                "job_title": "",
+                "phone": "8123617599",
+                "address": "",
+                "avatar_url": "https://app.box.com/api/avatar/large/238120843"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "createUser",
+        "summary": "Create User",
+        "description": "Used to provision a new user in an enterprise. This method only works for enterprise admins.",
+        "externalDocs": {
+          "url": "https://docs.box.com/reference#create-an-enterprise-user"
+        },
+        "parameters": [
+          {
+            "name": "fields",
+            "description": "Attribute(s) to include in the response",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateUserReference"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Returns the full user object for the newly created user. Errors may be thrown when the fields are invalid or this API call is made from a non-admin account.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "examples": {
+              "application/json": {
+                "type": "user",
+                "id": "187273718",
+                "name": "Ned Stark",
+                "login": "eddard@box.com",
+                "created_at": "2012-11-15T16:34:28-08:00",
+                "modified_at": "2012-11-15T16:34:29-08:00",
+                "role": "user",
+                "language": "en",
+                "space_amount": 5368709120,
+                "space_used": 0,
+                "max_upload_size": 2147483648,
+                "tracking_codes": [],
+                "can_see_managed_users": true,
+                "is_sync_enabled": true,
+                "status": "active",
+                "job_title": "",
+                "phone": "555-555-5555",
+                "address": "555 Box Lane",
+                "avatar_url": "https://www.box.com/api/avatar/large/187273718",
+                "is_exempt_from_device_limits": false,
+                "is_exempt_from_login_verification": false
+              }
+            }
+          },
+          "default": {
+            "description": "Create User error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/users/{USER_ID}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "getUser",
+        "summary": "Get User's Info",
+        "description": "Retrieves information about a user in the enterprise. Requires enterprise administration authorization.",
+        "externalDocs": {
+          "url": "https://docs.box.com/reference#users"
+        },
+        "parameters": [
+          {
+            "name": "USER_ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-example": "238120843"
+          },
+          {
+            "name": "fields",
+            "description": "Attribute(s) to include in the response",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a single complete user object. Note: The GET /users{id} endpoint also returns a limited set of information for external users who are collaborated on content owned by the enterprise for certain admin scopes/users. Disallowed fields will return null.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "examples": {
+              "application/json": {
+                "type": "user",
+                "id": "10543463",
+                "name": "Arielle Frey",
+                "login": "ariellefrey@box.com",
+                "created_at": "2011-01-07T12:37:09-08:00",
+                "modified_at": "2014-05-30T10:39:47-07:00",
+                "language": "en",
+                "timezone": "America/Los_Angeles",
+                "space_amount": 10737418240,
+                "space_used": 558732,
+                "max_upload_size": 5368709120,
+                "status": "active",
+                "job_title": "",
+                "phone": "",
+                "address": "",
+                "avatar_url": "https://blosserdemoaccount.app.box.com/api/avatar/large/10543465"
+              }
+            }
+          },
+          "default": {
+            "description": "Get User info error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "updateUser",
+        "summary": "Update User, Change User's Login",
+        "description": "Used to edit the settings and information about a user. This method only works for enterprise admins. To roll a user out of the enterprise (and convert them to a standalone free user), update the special enterprise attribute to be null.\n\nUsed to convert one of the user’s confirmed email aliases into the user’s primary login.",
+        "externalDocs": {
+          "url": "https://docs.box.com/reference#update-a-users-information"
+        },
+        "parameters": [
+          {
+            "name": "USER_ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-example": "1695560697"
+          },
+          {
+            "name": "fields",
+            "description": "Attribute(s) to include in the response",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the a full user object for the updated user. Errors may be thrown when the fields are invalid or this API call is made from a non-admin account.",
+            "schema": {
+              "$ref": "#/definitions/User"
+            },
+            "examples": {
+              "application/json": {
+                "type": "user",
+                "id": "1695569585",
+                "name": "Ned Stark",
+                "login": "AppUser_356982_C44b1iFHAl@boxdevedition.com",
+                "created_at": "2017-05-16T14:33:36-07:00",
+                "modified_at": "2017-05-16T14:33:36-07:00",
+                "language": "en",
+                "timezone": "America/Los_Angeles",
+                "space_amount": 10737418240,
+                "space_used": 0,
+                "max_upload_size": 2147483648,
+                "status": "active",
+                "job_title": "",
+                "phone": "",
+                "address": "",
+                "avatar_url": "https://app.box.com/api/avatar/large/1695569585"
+              }
+            }
+          },
+          "default": {
+            "description": "Errors may be thrown when the fields are invalid or this API call is made from a non-admin account.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "deleteUser",
+        "summary": "Delete User",
+        "description": "Deletes a user in an enterprise account.",
+        "externalDocs": {
+          "url": "https://docs.box.com/reference#delete-an-enterprise-user"
+        },
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "USER_ID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "x-example": "1684392715"
+          },
+          {
+            "name": "notify",
+            "in": "query",
+            "type": "boolean"
+          },
+          {
+            "name": "force",
+            "in": "query",
+            "type": "boolean"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "An empty 204 response is sent to confirm deletion of the user. If the user still has files in their account and the ‘force’ parameter is not sent, an error is returned."
+          },
+          "default": {
+            "description": "If the user still has files in their account and the ‘force’ parameter is not sent, an error is returned.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
