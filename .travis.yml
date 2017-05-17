@@ -1,6 +1,6 @@
-language: go
+language: node
 before_install:
-  - npm install -g dredd@3.4.5
+  - npm install -g dredd@3.4.5 --no-optional
 
 after_success:
     - dredd
