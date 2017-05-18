@@ -3,5 +3,5 @@ before_install:
   - npm install -g dredd@3.4.5 --no-optional
 
 after_success:
-    - dredd
-script: pwd
+    - dredd --config ./dredd.yml --reporter junit --output junit-report.xml
+script: ls
