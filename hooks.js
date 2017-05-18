@@ -8,7 +8,7 @@ const util = require('util');
 // of Swagger in Dredd works only for application/json as of now
 hooks.beforeEach((transaction, done) => {
   let contentType;
-  transaction.request.headers['Authorization'] = 'Bearer zXDyin4JVE2kAzFvlPd9nIz0PDXXZmhU';
+  transaction.request.headers['Authorization'] = 'Bearer 9uHaIBoT48FufI8epnRA1VZhE1foDoac';
   if (transaction.expected.statusCode == '204') {
     transaction.request.headers['Accept'] = 'text/plain';
     delete transaction.expected.headers['Content-Type'];
