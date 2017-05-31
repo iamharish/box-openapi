@@ -1,0 +1,19 @@
+{
+  "name": "openapi2.0",
+  "version": "0.0.1",
+  "description": "Open API 2.0 and Dredd Tests",
+  "main": "hooks.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Harish Gokavarapu",
+  "license": "ISC",
+  "dependencies": {
+    "caseless": "^0.12.0",
+    "dredd": "3.5.0",
+    "fs": "0.0.1-security",
+    "ini": "^1.3.4",
+    "request": "^2.81.0",
+    "util": "^0.10.3"
+  }
+}

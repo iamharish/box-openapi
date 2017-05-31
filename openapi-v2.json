@@ -366,7 +366,7 @@
       "example" : {
         "name": "Ned Stark",
         "login": "ned+stark@box.com",
-        "is_platform_access_only":true
+        "is_platform_access_only":false
       }
     },
     "UserReference": {
@@ -2779,7 +2779,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "238120843"
+            "x-example": "221860571"
           },
           {
             "name": "fields",
@@ -2840,7 +2840,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "1695560697"
+            "x-example": "221860571"
           },
           {
             "name": "fields",
@@ -2891,6 +2891,25 @@
               "$ref": "#/definitions/Error"
             }
           }
+        },
+        "x-test": {
+          "pre": {
+            "request": {
+              "headers": {
+                "Authorization": "$accessToken"
+              }
+            }
+          },
+          "post": {
+            "request": {
+              "#delete": {
+                "parameters": {
+                  "name": "USER_ID",
+                  "value": "$response.body.id"
+                }
+              }
+            }
+          }
         }
       },
       "delete": {
@@ -2912,7 +2931,7 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "x-example": "1684392715"
+            "x-example": "221860571"
           },
           {
             "name": "notify",

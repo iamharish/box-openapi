@@ -1,6 +1,6 @@
 dependencies:
   pre:
-    - npm install -g dredd@3.4.5
+    - npm install
 test:
   post:
     - dredd

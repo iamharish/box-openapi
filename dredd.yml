@@ -1,5 +1,5 @@
 dry-run: null
-hookfiles: hooks.js
+hookfiles: ./*/*_hooks.js
 language: nodejs
 sandbox: false
 server: null
@@ -32,5 +32,5 @@ hooks-worker-term-retry: 500
 hooks-worker-handler-host: 127.0.0.1
 hooks-worker-handler-port: 61321
 config: ./dredd.yml
-blueprint: openapi-v2.json
+blueprint: ./v2.0/openapi-v2.json
 endpoint: 'https://api.box.com'
