@@ -4,7 +4,7 @@
   "description": "Open API 2.0 and Dredd Tests",
   "main": "hooks.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "dredd"
   },
   "author": "Harish Gokavarapu",
   "license": "ISC",

@@ -1,6 +1,3 @@
 dependencies:
   pre:
     - npm install -g
-test:
-  post:
-    - dredd
